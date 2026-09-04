@@ -17,7 +17,12 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - name: Install Linux build dependencies (enigo/xcap)
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y libxdo-dev libxcb1-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libxdo-dev libxcb1-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev \
+            libxkbcommon-dev libwayland-dev libx11-dev libxrandr-dev libxi-dev \
+            libxcursor-dev libxinerama-dev libudev-dev libdbus-1-dev
       - name: Build
         run: cargo build --verbose
       - name: Run tests
