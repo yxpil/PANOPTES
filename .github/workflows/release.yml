@@ -1,0 +1,56 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            archive: tar.gz
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            archive: tar.gz
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            archive: zip
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - name: Install Linux build dependencies (enigo/xcap)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libxdo-dev libxcb1-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev
+      - name: Build release binary
+        run: cargo build --release --target ${{ matrix.target }}
+      - name: Package (unix)
+        if: runner.os != 'Windows'
+        run: |
+          cd target/${{ matrix.target }}/release
+          tar czf ../../../panoptes-${{ matrix.target }}.tar.gz panoptes
+          cd -
+          shasum -a 256 panoptes-${{ matrix.target }}.tar.gz > panoptes-${{ matrix.target }}.tar.gz.sha256
+      - name: Package (windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Compress-Archive -Path target/${{ matrix.target }}/release/panoptes.exe -DestinationPath panoptes-${{ matrix.target }}.zip
+          (Get-FileHash panoptes-${{ matrix.target }}.zip -Algorithm SHA256).Hash | Out-File -Encoding ascii panoptes-${{ matrix.target }}.zip.sha256
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            panoptes-*.tar.gz
+            panoptes-*.tar.gz.sha256
+            panoptes-*.zip
+            panoptes-*.zip.sha256
