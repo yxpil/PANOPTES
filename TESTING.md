@@ -1,3 +1,11 @@
+# PANOPTES 测试说明
+- 测试完成：是（2026-10-04）
+- 测试日期：2026-10-04
+- 测试内容：单元覆盖 coords(坐标映射/Retina 缩放/区域钳制)、input(键位组合解析)、tools(静态注册表与控制门)；集成覆盖 cli 与 mcp(经假 `ScreenBackend` 驱动真实 `dispatch_sync`)；注入测试覆盖参数解析层（`key_type` 的 XSS/shell 串被逐字透传为字面按键、错 JSON 类型/未知按钮/滚动轴/截图格式/单边坐标均返回干净 isError）。无运行时钩子/插件/事件机制。
+- 运行命令：`cargo test`（仓库根）
+- 测试框架：Rust `#[cfg(test)]` + `cargo test`（集成测试位于 `tests/`）
+- 模型：豆包（Doubao）生成
+
 # Testing PANOPTES
 
 PANOPTES is a screen-operation MCP server (screenshots + mouse/keyboard control).
